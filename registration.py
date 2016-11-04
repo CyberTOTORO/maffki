@@ -21,11 +21,6 @@ class MafiaBot:
         self.commands = json.loads(open('data/text.json', encoding='utf-8').read())
         self.roles = open('data/roles.txt', 'r').read().splitlines()
         self.db = database.DataBase()
-        
-        #self.urban = tuple('citizen', 'commis', 'bum', 'sergeant', 'putana', 'doctor', 'sheriff')
-        #self.mafia = tuple('mafia', 'lawyer', 'killer', 'mafiaboss')
-        #self.crazy = tuple('maniac', 'robber')
-
 
     def gameCall(self, timer): # Check of the call starter
         event = self.api.getLongpoll()
@@ -73,15 +68,14 @@ class MafiaBot:
         user_ids = ','.join(user_ids)
         users_info = self.api.getUser(user_ids=user_ids, fields='friend_status,can_write_private_message')
 
-        for i in range(len(users_info)): 
+        for i in range(len(users_info)):
             if users_info[i]['friend_status'] < 2:
                 if users_info[i]['can_write_private_message'] == 1:
                     self.api.sendMessage(peer_id=users_info[i]['id'], message=self.commands['cant_play'])
             else:
                 if users_info[i]['friend_status'] == 2: # Here can be case with 10k friends
                     self.api.addFriend(users_info[i]['id'])
-                id = self.db.getPlayerId('vk', users_info[i]['id'])
-                id = id[0]
+                id = self.db.getPlayerId('vk', users_info[i]['id'])[0]
                 if not self.db.checkActiveGame(id)[0]:
                     self.db.setActiveGame(id, 'TRUE')
                     player_ids = self.userReg(player_ids, i, id)
@@ -97,23 +91,24 @@ class MafiaBot:
         player_ids[num]['id'] = id
         player_ids[num]['role'] = 'citizen'
         player_ids[num]['dead'] = False
+        player_ids[num]['score'] = 0
+        player_ids[num]['salary'] = 0
+        player_ids[num]['who'] = 0
+        # Do an item adder
         return player_ids
      
     def setRoles(self, player_ids):
-        for elem in range(len(player_ids)):
+        for elem in player_ids:
             numb = random.choice(list(player_ids))
             while not player_ids[numb]['role'] == 'citizen':
                 numb = random.choice(list(player_ids))
             player_ids[numb]['role'] = self.roles[elem]
         games = gameloop.Game(player_ids, self.username, self.password)
 
-
-
-
 def main():
-    a = MafiaBot('l', 'p')
+    a = MafiaBot('login', 'password')
     while True:
-        a.gameCall(70)
+        a.gameCall(140)
     
 if __name__ == '__main__':
     main()

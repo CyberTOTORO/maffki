@@ -156,8 +156,8 @@ class Game:
             name = name_last[0]['first_name'] + ' ' + name_last[0]['last_name']
             self.api.sendMessage(peer_id=general_room, message=self.commands['success_arrest'] + name)
             player_ids[loser_num]['dead'] = True
-            self.confDel(loser_id, general_room, - self.CONF_START)
-            self.confDel(loser_id, mafia_room - self.CONF_START)
+            self.confDel(loser_id, general_room - CONF_START)
+            self.confDel(loser_id, mafia_room - CONF_START)
         else:
             self.api.sendMessage(peer_id=general_room, message=self.commands['unsuccess_arrest'])
 
@@ -247,14 +247,18 @@ class Game:
 
         # Finished time
         if not commis['id'] == -1 and not commis['victim_id'] == -1: # Answer to commis
-            name_resp = self.api.getUser(user_ids=commis['victim_id'], name_case='nom')
+            name_resp = self.api.getUser(user_ids=commis['victim_id'], fields='sex', name_case='nom')
             name = name_resp[0]['first_name'] + ' ' + name_resp[0]['last_name']
             if player_ids[commis['victim_num']]['role'] in self.urbans:
                 text = self.commands['commis_message'] + name + self.commands['commis_urban']
                 self.api.sendMessage(peer_id=general_room, message=text)
             elif player_ids[commis['victim_num']]['role'] in self.mafias:
                 text = self.commands['commis_message'] + name
-                text += self.commands['commis_mafia'] + self.commands[player_ids[commis['victim_num']]['role'] + '_ins']
+                if name_resp[0]['sex'] == 1:
+                    text += self.commands['commis_mafia_f']
+                else:
+                    text += self.commands['commis_mafia_m']
+                text += self.commands[player_ids[commis['victim_num']]['role'] + '_ins']
                 self.api.sendMessage(peer_id=general_room, message=text)
 
             try:
@@ -307,13 +311,13 @@ class Game:
                 text = self.commands['mafia_kill_m'] + name + '<br>' + 'Он оказался ' + self.commands[loser_role + '_ins']
                 self.api.sendMessage(peer_id=general_room, message=text)
 
-            self.confDel(loser_id, general_room, - self.CONF_START)
-            self.confDel(loser_id, mafia_room - self.CONF_START)
+            self.confDel(loser_id, general_room - CONF_START)
+            self.confDel(loser_id, mafia_room - CONF_START)
         else:
             self.api.sendMessage(peer_id=general_room, message=self.commands['unsuccess_kill'])
 
-        self.confDel(maniac['victim_id'], general_room, - self.CONF_START)
-        self.confDel(maniac['victim_id'], mafia_room - self.CONF_START)
+        self.confDel(maniac['victim_id'], general_room - CONF_START)
+        self.confDel(maniac['victim_id'], mafia_room - CONF_START)
         return player_ids
 
     def useItem(self, player_id):
